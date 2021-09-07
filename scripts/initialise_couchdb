@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+USER=${COUCHDB_USERNAME:-}
+PASS=${COUCHDB_PASSWORD:-}
+DB=${COUCHDB_DBNAME:-}
+
+IP_ADDRESS=127.0.0.1
+PORT=5984
+
+source `which couchdb_gateway.sh`
+
+startCouchDbInBackground
+
+waitForCouchDb
+
+if [ -n "$USER" ]; then
+  if [ -z "$PASS" ]; then
+    setGeneratedPassword
+  fi
+  echo "Creating user: \"$USER\"..."
+  createCouchDbUser
+fi
+
+if [ -n "$DB" ]; then
+  echo "Creating database: \"$DB\"..."
+  if [ -n "$USER" ]; then
+    createCouchDbDatabase
+  else
+    createCouchDbDatabaseWithoutCredentials
+  fi
+fi
+
+stopCouchDb
+
+if [ -n "$USER" ]; then
+  echo "========================================================"
+  echo "CouchDB User: \"$USER\""
+  echo "CouchDB Password: \"$PASS\""
+  echo "========================================================"
+fi
+
+exit 0
